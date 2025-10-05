@@ -1,9 +1,11 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>APK Builder Futurista</title>
+  <meta charset="utf-8">
+  <title>web2app tech — Build Android App from Website</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="web2app tech - Create Android apps from any website.">
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <style>
     :root{
       --bg: #0a0c0d;
@@ -17,210 +19,565 @@
       font-family: "Segoe UI", "Inter", sans-serif;
     }
 
-    *{margin:0;padding:0;box-sizing:border-box;transition:all 0.25s ease;}
+    *{margin:0;padding:0;box-sizing:border-box;transition:all 0.20s ease;}
     html,body{height:100%;background:var(--bg);color:#fff;overflow-x:hidden;}
+    a{color:var(--accent2);text-decoration:none}
 
-    /* 🌌 Fondo animado */
-    body::before{
-      content:"";
-      position:fixed;top:0;left:0;width:100%;height:100%;
-      background:radial-gradient(circle at center, rgba(0,255,136,0.05), rgba(0,0,0,0.9)),
-                 linear-gradient(45deg, rgba(0,191,255,0.05), rgba(0,255,136,0.05));
-      z-index:-2;
-      animation:bgMove 10s infinite alternate ease-in-out;
-    }
-    @keyframes bgMove{
-      from{filter:hue-rotate(0deg);}
-      to{filter:hue-rotate(360deg);}
-    }
-
-    /* 🏷 HEADER */
+    /* Header */
     header{
       backdrop-filter: blur(14px);
       background: rgba(255,255,255,0.03);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
       display:flex;align-items:center;justify-content:space-between;
-      padding:16px 26px;position:sticky;top:0;z-index:100;
+      padding:14px 22px;position:sticky;top:0;z-index:100;
     }
-    .brand{display:flex;gap:14px;align-items:center;}
+    .brand{display:flex;gap:12px;align-items:center}
     .logo{
-      width:56px;height:56px;border-radius:16px;
-      background:var(--panel);
-      display:flex;align-items:center;justify-content:center;
-      font-weight:900;font-size:20px;
-      color:var(--accent1);
-      box-shadow:0 0 18px var(--accent1);
+      width:50px;height:50px;border-radius:12px;background:var(--panel);
+      display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:var(--accent1);
+      box-shadow:0 0 16px rgba(0,255,136,0.08);
     }
-    .title h1{margin:0;font-size:20px;font-weight:800;}
-    .title p{margin:0;font-size:13px;color:var(--muted)}
+    .title h1{margin:0;font-size:18px;font-weight:800}
+    .title p{margin:0;font-size:12px;color:var(--muted)}
 
-    /* 📜 Sidebar */
+    /* Sidebar */
     #sidebar {
       position: fixed;
-      left: -250px;
+      left: -260px;
       top: 0;
-      width: 250px;
+      width: 260px;
       height: 100%;
       background: var(--panel);
       backdrop-filter: blur(16px);
-      border-right: 1px solid rgba(255,255,255,0.08);
+      border-right: 1px solid rgba(255,255,255,0.06);
       box-shadow: var(--shadow);
-      padding: 2rem 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      transition: left 0.4s ease;
+      padding: 26px 16px;
+      display: flex;flex-direction:column;gap:14px;
+      transition: left 0.36s cubic-bezier(.2,.9,.2,1);
       z-index: 999;
     }
     #sidebar.active { left: 0; }
-    #sidebar h2 { text-align: center; color: var(--accent1); }
-    #sidebar a {
-      color: var(--muted);
-      text-decoration: none;
-      padding: 10px;
-      border-radius: 12px;
-      display: block;
-    }
-    #sidebar a:hover {
-      background: linear-gradient(90deg, var(--accent1), var(--accent2));
-      color: #041010;
-      transform: scale(1.05);
-    }
-    #toggleSidebar {
-      cursor: pointer;
-      font-size: 1.5rem;
-      color: var(--accent1);
-      transition: 0.3s;
-    }
-    #toggleSidebar:hover { color: var(--accent2); }
+    #sidebar h2 { color: var(--accent1); font-size:16px; margin:0 0 6px 0; text-align:center; }
+    #sidebar a{color:var(--muted);padding:10px;border-radius:10px;display:block}
+    #sidebar a:hover{background:linear-gradient(90deg,var(--accent1),var(--accent2));color:#041010;transform:translateX(6px)}
 
-    /* 📦 CARDS */
-    main{padding:2rem;display:flex;flex-direction:column;align-items:center;gap:2rem;position:relative;z-index:2}
-    section{width:100%;max-width:640px;}
-    .card{
-      background:var(--panel);
-      border-radius:var(--radius);
-      padding:1.5rem;
-      box-shadow:var(--shadow);
-      border:1px solid rgba(255,255,255,0.08);
-      backdrop-filter:blur(12px);
-      transition:transform 0.3s ease,box-shadow 0.3s ease;
-    }
-    .card:hover{transform:translateY(-6px);box-shadow:0 0 28px var(--accent2)}
-    .card h2{
-      font-size:1.6rem;text-align:center;margin-bottom:1rem;
-      background:linear-gradient(90deg,var(--accent1),var(--accent2));
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-    }
+    #toggleSidebar{cursor:pointer;font-size:20px;color:var(--accent1)}
 
-    /* 🔘 Inputs */
-    input,textarea,select{
-      width:100%;margin:8px 0;padding:12px;border-radius:12px;
-      border:1.5px solid var(--accent1);background:var(--glass);
-      color:#fff;font-size:1rem;
-    }
-    input:focus,textarea:focus,select:focus{
-      border-color:var(--accent2);outline:none;background:rgba(255,255,255,0.15)
-    }
+    /* Layout */
+    .wrap{display:grid;grid-template-columns: 1fr 420px;gap:22px;padding:28px;align-items:start;min-height:calc(100vh - 120px)}
+    .panel{background:var(--panel);border-radius:var(--radius);padding:18px;border:1px solid rgba(255,255,255,0.05);backdrop-filter:blur(12px);box-shadow:var(--shadow)}
+    h2.card-title{font-size:20px;margin-bottom:12px;color:transparent;background:linear-gradient(90deg,var(--accent1),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-align:left}
 
+    label{display:block;color:var(--muted);font-size:13px;margin-top:12px}
+    input[type="text"], input[type="url"], textarea, select{
+      width:100%;padding:12px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.06);
+      background:var(--glass);color:#fff;font-size:14px;margin-top:8px;
+    }
+    input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent2);background:rgba(255,255,255,0.06)}
+    textarea{min-height:90px;resize:vertical}
+
+    .row{display:flex;gap:10px}
     .btn{
-      width:100%;margin:12px 0;padding:12px;border:none;border-radius:12px;
-      font-size:1rem;font-weight:bold;cursor:pointer;
-      background:linear-gradient(90deg,var(--accent1),var(--accent2));
-      color:#041010;box-shadow:0 0 12px var(--accent1);
+      display:inline-block;padding:12px;border-radius:12px;border:none;background:linear-gradient(90deg,var(--accent1),var(--accent2));
+      color:#041010;font-weight:700;cursor:pointer;margin-top:14px;width:100%;
     }
-    .btn:hover{transform:scale(1.05);box-shadow:0 0 18px var(--accent2)}
+    .small{font-size:13px;color:var(--muted);margin-top:8px}
 
-    /* 📊 Barra progreso */
-    .progress-container{
-      width:100%;background:rgba(255,255,255,0.1);border-radius:12px;
-      margin:12px 0;height:25px;overflow:hidden;border:1px solid var(--accent1)
+    /* preview */
+    .preview{position:sticky;top:28px;padding:14px;display:flex;flex-direction:column;gap:12px;align-items:center}
+    .phone{
+      width:220px;height:430px;border-radius:28px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:2px solid rgba(255,255,255,0.03);box-shadow:0 14px 30px rgba(0,0,0,0.6);overflow:hidden;position:relative;
     }
-    .progress-bar{
-      height:100%;width:0%;background:linear-gradient(90deg,var(--accent1),var(--accent2));
-      text-align:center;color:#000;font-size:.9rem;font-weight:bold;line-height:25px;
-      transition:width 0.3s ease;
+    .phone .top{height:56px;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+    .phone iframe{width:100%;height:calc(100% - 56px);border:0}
+
+    .icon-preview{width:80px;height:80px;border-radius:16px;background:linear-gradient(90deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:900;color:#041010;font-size:30px;margin:0 auto}
+
+    .progress-container{width:100%;background:rgba(255,255,255,0.03);height:22px;border-radius:12px;margin-top:14px;border:1px solid rgba(255,255,255,0.04)}
+    .progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent1),var(--accent2));border-radius:12px;text-align:center;color:#041010;font-weight:800;line-height:22px}
+
+    footer{padding:20px;text-align:center;color:var(--muted);font-size:13px}
+
+    /* responsive */
+    @media (max-width: 980px){
+      .wrap{grid-template-columns: 1fr; padding:18px}
+      #sidebar{left:-100%}
     }
 
-    footer{text-align:center;padding:2rem;color:var(--muted);}
   </style>
 </head>
 <body>
-
   <header>
     <div class="brand">
       <div id="toggleSidebar">☰</div>
-      <div class="logo">APK</div>
+      <div class="logo">W2A</div>
       <div class="title">
-        <h1>APK Builder Futurista</h1>
-        <p>Crea apps desde tu web</p>
+        <h1>web2app tech</h1>
+        <p>Convert websites into Android apps</p>
       </div>
     </div>
+    <nav>
+      <a href="#" style="margin-right:14px">Home</a>
+      <a href="#" style="margin-right:14px">Features</a>
+      <a href="#" style="margin-right:14px">Pricing</a>
+      <a href="#" style="opacity:.9">Contact</a>
+    </nav>
   </header>
 
-  <aside id="sidebar">
+  <aside id="sidebar" aria-hidden="true">
     <h2>Redes Sociales</h2>
-    <a href="#">🌐 Sitio Web</a>
-    <a href="#">💬 Discord</a>
-    <a href="#">🐦 Twitter</a>
-    <a href="#">📸 Instagram</a>
-    <a href="#">🎬 YouTube</a>
+    <a id="link-site" href="#" target="_blank">🌐 Website</a>
+    <a id="link-discord" href="#" target="_blank">💬 Discord</a>
+    <a id="link-twitter" href="#" target="_blank">🐦 Twitter</a>
+    <a id="link-insta" href="#" target="_blank">📸 Instagram</a>
+    <a id="link-youtube" href="#" target="_blank">🎬 YouTube</a>
   </aside>
 
-  <main>
-    <section class="card">
-      <h2>Configura tu App</h2>
-      <label>Nombre de la App:</label>
-      <input type="text" id="appName" placeholder="Ej: NeoBrowser">
-      <label>URL del sitio web:</label>
-      <input type="url" id="appURL" placeholder="https://...">
-      <label>Descripción:</label>
-      <textarea id="appDesc" placeholder="Descripción de tu aplicación..."></textarea>
-      <label>Ícono de la app:</label>
-      <input type="file" id="appIcon" accept="image/*">
-      <button class="btn" id="generateBtn">Generar APK</button>
+  <main class="wrap">
+    <section class="panel">
+      <h2 class="card-title">Build your Android App</h2>
 
-      <div class="progress-container">
+      <label for="appName">App name</label>
+      <input id="appName" type="text" placeholder="web2app tech" value="web2app tech">
+
+      <label for="packageName">Package name (ex: com.mycompany.myapp)</label>
+      <input id="packageName" type="text" placeholder="com.example.myapp" value="com.web2apptech.app">
+
+      <label for="appURL">Website URL (to load in WebView)</label>
+      <input id="appURL" type="url" placeholder="https://example.com" value="https://example.com">
+
+      <label for="appDesc">Description</label>
+      <textarea id="appDesc" placeholder="Short description for your app...">An app generated by web2app tech.</textarea>
+
+      <label for="accentColor">Accent color</label>
+      <input id="accentColor" type="color" value="#00bfff">
+
+      <label for="appIcon">App icon (square PNG) — optional</label>
+      <input id="appIcon" type="file" accept="image/*">
+
+      <label for="splashFile">Splash image (optional)</label>
+      <input id="splashFile" type="file" accept="image/*">
+
+      <label style="margin-top:12px">Social links (sidebar) — name | url</label>
+      <div id="socialsContainer" style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;gap:8px">
+          <input class="socialName" placeholder="Name (Facebook)" value="Facebook" style="flex:1;padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.04)">
+          <input class="socialUrl" placeholder="https://facebook.com/..." value="https://facebook.com" style="flex:2;padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.04)">
+        </div>
+        <div style="display:flex;gap:8px">
+          <input class="socialName" placeholder="Name (Twitter)" value="Twitter" style="flex:1;padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.04)">
+          <input class="socialUrl" placeholder="https://twitter.com/..." value="https://twitter.com" style="flex:2;padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.04)">
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button id="addSocial" class="btn" style="width:auto;padding:10px 14px">+ Add social</button>
+        <button id="generateZip" class="btn" style="width:auto;background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);margin-left:auto">Generate Project ZIP</button>
+      </div>
+
+      <div class="small">Notes: the ZIP contains an Android Studio project (Java) ready to open. To get a real .apk open in Android Studio or push to GitHub (workflow included).</div>
+
+      <div class="progress-container" style="margin-top:14px">
         <div class="progress-bar" id="progressBar">0%</div>
       </div>
     </section>
+
+    <aside class="panel preview">
+      <h2 class="card-title">Preview</h2>
+      <div class="icon-preview" id="iconPreview">W2A</div>
+      <div class="phone" style="margin-top:10px">
+        <div class="top" id="phoneTop">web2app tech</div>
+        <iframe id="previewFrame" src="about:blank"></iframe>
+      </div>
+
+      <button id="downloadIcon" class="btn" style="margin-top:12px">Download Icon PNG</button>
+      <div class="small" style="margin-top:6px">You can open the generated ZIP in Android Studio or push it to GitHub and use the included Actions workflow to build APK</div>
+    </aside>
   </main>
 
   <footer>
-    <p>© 2025 NeoTech Labs - Proyecto Futurista</p>
+    © <strong>web2app tech</strong> — ready-made Android projects. Local compile required for real APK.
   </footer>
 
-  <script>
-    // Sidebar toggle
-    const sidebar = document.getElementById("sidebar");
-    const toggleSidebar = document.getElementById("toggleSidebar");
-    toggleSidebar.onclick = () => {
-      sidebar.classList.toggle("active");
-    };
+<script>
+/* ---------- UI interactions ---------- */
+const sidebar = document.getElementById('sidebar');
+const toggle = document.getElementById('toggleSidebar');
+toggle.addEventListener('click', ()=> sidebar.classList.toggle('active'));
 
-    // Simulación de generación APK
-    const progressBar = document.getElementById("progressBar");
-    const generateBtn = document.getElementById("generateBtn");
+const appNameEl = document.getElementById('appName');
+const packageEl = document.getElementById('packageName');
+const urlEl = document.getElementById('appURL');
+const descEl = document.getElementById('appDesc');
+const accentEl = document.getElementById('accentColor');
+const iconInput = document.getElementById('appIcon');
+const splashInput = document.getElementById('splashFile');
+const iconPreview = document.getElementById('iconPreview');
+const previewFrame = document.getElementById('previewFrame');
+const phoneTop = document.getElementById('phoneTop');
 
-    generateBtn.addEventListener("click", () => {
-      let width = 0;
-      generateBtn.disabled = true;
-      const interval = setInterval(() => {
-        if (width >= 100) {
-          clearInterval(interval);
-          generateBtn.textContent = "✅ APK Generado (Simulado)";
-          const blob = new Blob(["Simulación de APK"], { type: "application/vnd.android.package-archive" });
-          const link = document.createElement("a");
-          link.href = URL.createObjectURL(blob);
-          link.download = "AppGenerada.apk";
-          link.click();
-        } else {
-          width += 2;
-          progressBar.style.width = width + "%";
-          progressBar.textContent = width + "%";
+const socialsContainer = document.getElementById('socialsContainer');
+document.getElementById('addSocial').addEventListener('click', ()=> {
+  const div = document.createElement('div'); div.style.display='flex'; div.style.gap='8px';
+  div.innerHTML = '<input class="socialName" placeholder="Name" style="flex:1;padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.04)"><input class="socialUrl" placeholder="https://..." style="flex:2;padding:8px;border-radius:8px;background:var(--glass);border:1px solid rgba(255,255,255,0.04)">';
+  socialsContainer.appendChild(div);
+});
+
+/* update preview */
+function updatePreview(){
+  const name = appNameEl.value || 'web2app tech';
+  iconPreview.textContent = name[0] ? name[0].toUpperCase() : 'W2A';
+  phoneTop.textContent = name;
+  let url = urlEl.value || 'about:blank';
+  if (url && !/^https?:\/\//i.test(url)) url = 'https://' + url;
+  previewFrame.src = url;
+}
+[appNameEl, urlEl, descEl, accentEl].forEach(el => el.addEventListener('input', updatePreview));
+updatePreview();
+
+/* read icon file and preview */
+iconInput.addEventListener('change', (ev)=>{
+  const f = ev.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = ()=> {
+    iconPreview.style.background = `url('${reader.result}') center/cover`;
+    iconPreview.textContent = '';
+  };
+  reader.readAsDataURL(f);
+});
+
+/* download icon (generate if none) */
+document.getElementById('downloadIcon').addEventListener('click', ()=>{
+  const canvas = document.createElement('canvas'); const size=512; canvas.width=size; canvas.height=size;
+  const ctx = canvas.getContext('2d');
+  const color = accentEl.value || '#00bfff';
+  ctx.fillStyle = color; ctx.fillRect(0,0,size,size);
+  ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.beginPath(); ctx.arc(size/2,size/2,size*0.42,0,Math.PI*2); ctx.fill();
+  const initial = (appNameEl.value||'W2A')[0] || 'W';
+  ctx.fillStyle = '#fff'; ctx.font='bold 220px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(initial.toUpperCase(), size/2, size/2 + 20);
+  canvas.toBlob(blob=>{
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${(appNameEl.value||'web2app').replace(/\s+/g,'_')}_icon.png`; a.click();
+  });
+});
+
+/* ---------- Project generation (ZIP) ---------- */
+
+// Helpers
+function sanitizePackage(pkg){
+  return (pkg||'com.example.app').trim().replace(/[^a-z0-9._]/gi,'').replace(/\.+/g,'.');
+}
+function packageToPath(pkg){ return sanitizePackage(pkg).split('.').join('/'); }
+function dataURItoBlob(dataURI){
+  const arr = dataURI.split(',');
+  const mime = arr[0].match(/:(.*?);/)[1];
+  const bstr = atob(arr[1]); let n=bstr.length; const u8 = new Uint8Array(n);
+  while(n--) u8[n] = bstr.charCodeAt(n);
+  return new Blob([u8], {type:mime});
+}
+function fileToDataURL(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
+
+// Build project file contents
+function makeFiles({appName, pkg, url, accentColor, socials, iconDataURI, splashDataURI, splashText, description}) {
+  const pkgSan = sanitizePackage(pkg);
+  const pkgPath = packageToPath(pkgSan);
+
+  const manifest = `<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="${pkgSan}">
+  <uses-permission android:name="android.permission.INTERNET" />
+  <application android:label="${appName}" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:allowBackup="true" android:theme="@style/Theme.App">
+    <activity android:name=".SplashActivity" android:exported="true" android:theme="@style/Theme.Splash">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+    </activity>
+    <activity android:name=".MainActivity" android:exported="true"/>
+  </application>
+</manifest>`;
+
+  const mainActivity = `package ${pkgSan};
+
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.widget.Toolbar;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity {
+    WebView webView;
+    DrawerLayout drawer;
+    @Override
+    protected void onCreate(Bundle s){
+        super.onCreate(s);
+        setContentView(R.layout.activity_main);
+
+        drawer = findViewById(R.id.drawer_layout);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.open, R.string.close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        webView = findViewById(R.id.webview);
+        webView.setWebViewClient(new WebViewClient());
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setDomStorageEnabled(true);
+        webView.loadUrl("${url}");
+
+        LinearLayout socialList = findViewById(R.id.social_list);
+        for (int i = 0; i < socialList.getChildCount(); i++) {
+            View v = socialList.getChildAt(i);
+            if (v instanceof TextView){
+                final String link = (String) v.getTag();
+                v.setOnClickListener(view -> {
+                    try {
+                        Intent it = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
+                        startActivity(it);
+                    } catch (Exception e){ e.printStackTrace(); }
+                });
+            }
         }
-      }, 100);
-    });
-  </script>
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (webView != null && webView.canGoBack()) webView.goBack();
+        else super.onBackPressed();
+    }
+}
+`;
+
+  const splashActivity = `package ${pkgSan};
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import androidx.appcompat.app.AppCompatActivity;
+
+public class SplashActivity extends AppCompatActivity {
+    @Override
+    protected void onCreate(Bundle s){
+        super.onCreate(s);
+        setContentView(R.layout.activity_splash);
+        new Handler().postDelayed(() -> {
+            startActivity(new Intent(SplashActivity.this, MainActivity.class));
+            finish();
+        }, 1400);
+    }
+}
+`;
+
+  const activityMain = `<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer_layout" android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <LinearLayout android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
+        <androidx.appcompat.widget.Toolbar android:id="@+id/toolbar" android:layout_height="wrap_content" android:layout_width="match_parent" android:background="${accentColor}" android:title="${appName}" android:titleTextColor="#ffffff"/>
+        <WebView android:id="@+id/webview" android:layout_width="match_parent" android:layout_height="match_parent"/>
+    </LinearLayout>
+
+    <LinearLayout android:layout_width=\"wrap_content\" android:layout_height=\"match_parent\" android:orientation=\"vertical\" android:background=\"#ffffff\" android:padding=\"12dp\">
+        <TextView android:id=\"@+id/nav_header\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\" android:text=\"${appName}\" android:textStyle=\"bold\" android:textSize=\"18sp\" android:textColor=\"#073b6b\" android:paddingBottom=\"8dp\"/>
+        <LinearLayout android:id=\"@+id/social_list\" android:orientation=\"vertical\" android:layout_width=\"wrap_content\" android:layout_height=\"wrap_content\">
+          <!-- social entries will be static in layout -->
+        </LinearLayout>
+    </LinearLayout>
+
+</androidx.drawerlayout.widget.DrawerLayout>`;
+
+  const activitySplash = `<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:background="${accentColor}">
+  ${splashDataURI ? `<ImageView android:id="@+id/splash_img" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop" android:src="@drawable/splash_img"/>` : ''}
+  <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="${splashText||appName}" android:textColor="#fff" android:textSize="28sp" android:layout_gravity="center" android:textStyle="bold"/>
+</FrameLayout>`;
+
+  const strings = `<?xml version="1.0" encoding="utf-8"?><resources><string name="app_name">${appName}</string><string name="open">Open</string><string name="close">Close</string></resources>`;
+
+  const styles = `<?xml version="1.0" encoding="utf-8"?><resources><style name="Theme.App" parent="Theme.AppCompat.Light.DarkActionBar"><item name="android:statusBarColor">${accentColor}</item></style><style name="Theme.Splash" parent="Theme.AppCompat.Light.NoActionBar"/></resources>`;
+
+  const appGradle = `plugins { id 'com.android.application' }\n\nandroid {\n  compileSdk 33\n  namespace '${pkgSan}'\n  defaultConfig {\n    applicationId '${pkgSan}'\n    minSdk 21\n    targetSdk 33\n    versionCode 1\n    versionName '1.0'\n  }\n  buildTypes { release { minifyEnabled false } }\n}\n\ndependencies { implementation 'androidx.appcompat:appcompat:1.6.1' implementation 'androidx.drawerlayout:drawerlayout:1.1.1' }`;
+
+  const settingsGradle = `rootProject.name = "${appName}"\ninclude ':app'`;
+
+  const readme = `web2app tech - Generated project\nOpen in Android Studio to build the APK.\nSocials:\n${socials.map(s=>`- ${s.name}: ${s.url}`).join('\\n')}`;
+
+  // GitHub Actions workflow for debug build
+  const workflow = `name: Android CI - Build APK
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+      - name: Run Gradle assembleDebug
+        run: ./gradlew assembleDebug --no-daemon
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+`;
+
+  // Fill social list static entries for layout content
+  let socialLayoutEntries = '';
+  socials.forEach(s=>{
+    socialLayoutEntries += `<TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="${s.name}" android:tag="${s.url}" android:padding="8dp" android:textColor="#000000"/>\n`;
+  });
+  // Replace placeholder social_list in activityMain (we used comment); produce a variant with socials
+  const activityMainWithSocials = activityMain.replace('<!-- social entries will be static in layout -->', socialLayoutEntries);
+
+  return {
+    'AndroidManifest.xml': manifest,
+    [`src/main/java/${pkgPath}/MainActivity.java`]: mainActivity,
+    [`src/main/java/${pkgPath}/SplashActivity.java`]: splashActivity,
+    'src/main/res/layout/activity_main.xml': activityMainWithSocials,
+    'src/main/res/layout/activity_splash.xml': activitySplash,
+    'src/main/res/values/strings.xml': strings,
+    'src/main/res/values/styles.xml': styles,
+    'settings.gradle': settingsGradle,
+    'app/build.gradle': appGradle,
+    '.github/workflows/android-ci.yml': workflow,
+    'README.txt': readme
+  };
+}
+
+/* ---------- UI: gather socials ---------- */
+function gatherSocials(){
+  const rows = Array.from(document.querySelectorAll('#socialsContainer > div'));
+  return rows.map(r=>{
+    const name = r.querySelector('.socialName') ? r.querySelector('.socialName').value.trim() : '';
+    const url = r.querySelector('.socialUrl') ? r.querySelector('.socialUrl').value.trim() : '';
+    return name && url ? {name, url} : null;
+  }).filter(Boolean);
+}
+
+/* ---------- Generate ZIP handler ---------- */
+const generateBtn = document.getElementById('generateZip');
+const progressBar = document.getElementById('progressBar');
+
+generateBtn.addEventListener('click', async ()=>{
+  const appName = appNameEl.value.trim() || 'web2app tech';
+  const pkg = sanitizePackage(packageEl.value) || 'com.web2apptech.app';
+  let url = urlEl.value.trim() || 'https://example.com';
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  const desc = descEl.value || '';
+  const accent = accentEl.value || '#00bfff';
+  const socials = gatherSocials();
+
+  generateBtn.disabled = true;
+  progressBar.style.width='6%'; progressBar.textContent='Starting...';
+
+  // read icon & splash
+  let iconData = null, splashData = null;
+  if (iconInput.files[0]) iconData = await fileToDataURL(iconInput.files[0]);
+  if (splashInput.files[0]) splashData = await fileToDataURL(splashInput.files[0]);
+
+  // fallback icon generation
+  if (!iconData){
+    // simple canvas icon
+    const c = document.createElement('canvas'); const size=192; c.width=c.height=size;
+    const ctx=c.getContext('2d'); ctx.fillStyle=accent; ctx.fillRect(0,0,size,size);
+    ctx.fillStyle='rgba(255,255,255,0.08)'; ctx.beginPath(); ctx.arc(size/2,size/2,size*0.42,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.font='bold 96px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText((appName[0]||'W').toUpperCase(), size/2, size/2+6);
+    iconData = c.toDataURL('image/png');
+  }
+
+  progressBar.style.width='18%'; progressBar.textContent='Preparing files...';
+
+  // make files
+  const files = makeFiles({appName, pkg, url, accentColor:accent, socials, iconDataURI:iconData, splashDataURI:splashData, splashText:appName, description:desc});
+
+  // build zip
+  const zip = new JSZip();
+  const root = appName.replace(/\s+/g,'_');
+
+  // add project files
+  zip.file(`${root}/settings.gradle`, files['settings.gradle']);
+  zip.file(`${root}/app/build.gradle`, files['app/build.gradle']);
+  zip.file(`${root}/AndroidManifest.xml`, files['AndroidManifest.xml']);
+  // add Java files
+  const pkgPath = packageToPath(pkg);
+  zip.file(`${root}/app/src/main/java/${pkgPath}/MainActivity.java`, files[`src/main/java/${pkgPath}/MainActivity.java`]);
+  zip.file(`${root}/app/src/main/java/${pkgPath}/SplashActivity.java`, files[`src/main/java/${pkgPath}/SplashActivity.java`]);
+  // layouts and values
+  zip.file(`${root}/app/src/main/res/layout/activity_main.xml`, files['src/main/res/layout/activity_main.xml']);
+  zip.file(`${root}/app/src/main/res/layout/activity_splash.xml`, files['src/main/res/layout/activity_splash.xml']);
+  zip.file(`${root}/app/src/main/res/values/strings.xml`, files['src/main/res/values/strings.xml']);
+  zip.file(`${root}/app/src/main/res/values/styles.xml`, files['src/main/res/values/styles.xml']);
+  zip.file(`${root}/.github/workflows/android-ci.yml`, files['.github/workflows/android-ci.yml']);
+  zip.file(`${root}/README.txt`, files['README.txt']);
+
+  progressBar.style.width='40%'; progressBar.textContent='Adding icons...';
+
+  // add icon files to mipmap (same icon for all densities)
+  const iconBlob = dataURItoBlob(iconData);
+  zip.file(`${root}/app/src/main/res/mipmap-mdpi/ic_launcher.png`, iconBlob);
+  zip.file(`${root}/app/src/main/res/mipmap-hdpi/ic_launcher.png`, iconBlob);
+  zip.file(`${root}/app/src/main/res/mipmap-xhdpi/ic_launcher.png`, iconBlob);
+  zip.file(`${root}/app/src/main/res/mipmap-xxhdpi/ic_launcher.png`, iconBlob);
+  zip.file(`${root}/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png`, iconBlob);
+
+  if (splashData){
+    progressBar.style.width='60%'; progressBar.textContent='Adding splash...';
+    const splashBlob = dataURItoBlob(splashData);
+    zip.file(`${root}/app/src/main/res/drawable/splash_img.png`, splashBlob);
+  }
+
+  progressBar.style.width='72%'; progressBar.textContent='Finalizing ZIP...';
+  const content = await zip.generateAsync({type:'blob'}, (meta)=>{
+    const pct = Math.floor(meta.percent);
+    progressBar.style.width = (72 + Math.floor(pct*0.28)) + '%';
+    progressBar.textContent = Math.min(99, 72 + Math.floor(pct*0.28)) + '%';
+  });
+
+  // trigger download
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(content);
+  a.download = `${root}_android_project.zip`;
+  a.click();
+
+  progressBar.style.width='100%'; progressBar.textContent='ZIP Ready';
+  setTimeout(()=>{ progressBar.style.width='0%'; progressBar.textContent='0%'; generateBtn.disabled=false; }, 1200);
+});
+
+/* Update sidebar links when socials change (live) */
+setInterval(()=> {
+  const links = ['link-site','link-discord','link-twitter','link-insta','link-youtube'];
+  const nodes = Array.from(document.querySelectorAll('#socialsContainer input'));
+  const socialEls = [];
+  for (let i=0;i<nodes.length; i+=2){
+    if (nodes[i] && nodes[i+1]){
+      const name = nodes[i].value.trim(), url = nodes[i+1].value.trim();
+      if (name && url) socialEls.push({name,url});
+    }
+  }
+  // update top 5 sidebar slots
+  for (let i=0;i<5;i++){
+    const el = document.getElementById(links[i]);
+    if (el){
+      if (socialEls[i]){ el.textContent = `🔗 ${socialEls[i].name}`; el.href = socialEls[i].url; }
+      else { el.textContent = ['Website','Discord','Twitter','Instagram','YouTube'][i]; el.href='#'; }
+    }
+  }
+}, 1200);
+
+</script>
 </body>
 </html>
