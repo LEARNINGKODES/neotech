@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APK Builder Futurista</title>
+  <style>
+    :root{
+      --bg: #0a0c0d;
+      --panel: rgba(18,22,25,0.6);
+      --glass: rgba(255,255,255,0.08);
+      --accent1: #00ff88;
+      --accent2: #00bfff;
+      --muted: #aeb6bf;
+      --radius: 20px;
+      --shadow: 0 10px 40px rgba(0,0,0,0.7);
+      font-family: "Segoe UI", "Inter", sans-serif;
+    }
+
+    *{margin:0;padding:0;box-sizing:border-box;transition:all 0.25s ease;}
+    html,body{height:100%;background:var(--bg);color:#fff;overflow-x:hidden;}
+
+    /* 🌌 Fondo animado */
+    body::before{
+      content:"";
+      position:fixed;top:0;left:0;width:100%;height:100%;
+      background:radial-gradient(circle at center, rgba(0,255,136,0.05), rgba(0,0,0,0.9)),
+                 linear-gradient(45deg, rgba(0,191,255,0.05), rgba(0,255,136,0.05));
+      z-index:-2;
+      animation:bgMove 10s infinite alternate ease-in-out;
+    }
+    @keyframes bgMove{
+      from{filter:hue-rotate(0deg);}
+      to{filter:hue-rotate(360deg);}
+    }
+
+    /* 🏷 HEADER */
+    header{
+      backdrop-filter: blur(14px);
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:16px 26px;position:sticky;top:0;z-index:100;
+    }
+    .brand{display:flex;gap:14px;align-items:center;}
+    .logo{
+      width:56px;height:56px;border-radius:16px;
+      background:var(--panel);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:900;font-size:20px;
+      color:var(--accent1);
+      box-shadow:0 0 18px var(--accent1);
+    }
+    .title h1{margin:0;font-size:20px;font-weight:800;}
+    .title p{margin:0;font-size:13px;color:var(--muted)}
+
+    /* 📜 Sidebar */
+    #sidebar {
+      position: fixed;
+      left: -250px;
+      top: 0;
+      width: 250px;
+      height: 100%;
+      background: var(--panel);
+      backdrop-filter: blur(16px);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      box-shadow: var(--shadow);
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      transition: left 0.4s ease;
+      z-index: 999;
+    }
+    #sidebar.active { left: 0; }
+    #sidebar h2 { text-align: center; color: var(--accent1); }
+    #sidebar a {
+      color: var(--muted);
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 12px;
+      display: block;
+    }
+    #sidebar a:hover {
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      color: #041010;
+      transform: scale(1.05);
+    }
+    #toggleSidebar {
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: var(--accent1);
+      transition: 0.3s;
+    }
+    #toggleSidebar:hover { color: var(--accent2); }
+
+    /* 📦 CARDS */
+    main{padding:2rem;display:flex;flex-direction:column;align-items:center;gap:2rem;position:relative;z-index:2}
+    section{width:100%;max-width:640px;}
+    .card{
+      background:var(--panel);
+      border-radius:var(--radius);
+      padding:1.5rem;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(255,255,255,0.08);
+      backdrop-filter:blur(12px);
+      transition:transform 0.3s ease,box-shadow 0.3s ease;
+    }
+    .card:hover{transform:translateY(-6px);box-shadow:0 0 28px var(--accent2)}
+    .card h2{
+      font-size:1.6rem;text-align:center;margin-bottom:1rem;
+      background:linear-gradient(90deg,var(--accent1),var(--accent2));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    }
+
+    /* 🔘 Inputs */
+    input,textarea,select{
+      width:100%;margin:8px 0;padding:12px;border-radius:12px;
+      border:1.5px solid var(--accent1);background:var(--glass);
+      color:#fff;font-size:1rem;
+    }
+    input:focus,textarea:focus,select:focus{
+      border-color:var(--accent2);outline:none;background:rgba(255,255,255,0.15)
+    }
+
+    .btn{
+      width:100%;margin:12px 0;padding:12px;border:none;border-radius:12px;
+      font-size:1rem;font-weight:bold;cursor:pointer;
+      background:linear-gradient(90deg,var(--accent1),var(--accent2));
+      color:#041010;box-shadow:0 0 12px var(--accent1);
+    }
+    .btn:hover{transform:scale(1.05);box-shadow:0 0 18px var(--accent2)}
+
+    /* 📊 Barra progreso */
+    .progress-container{
+      width:100%;background:rgba(255,255,255,0.1);border-radius:12px;
+      margin:12px 0;height:25px;overflow:hidden;border:1px solid var(--accent1)
+    }
+    .progress-bar{
+      height:100%;width:0%;background:linear-gradient(90deg,var(--accent1),var(--accent2));
+      text-align:center;color:#000;font-size:.9rem;font-weight:bold;line-height:25px;
+      transition:width 0.3s ease;
+    }
+
+    footer{text-align:center;padding:2rem;color:var(--muted);}
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div id="toggleSidebar">☰</div>
+      <div class="logo">APK</div>
+      <div class="title">
+        <h1>APK Builder Futurista</h1>
+        <p>Crea apps desde tu web</p>
+      </div>
+    </div>
+  </header>
+
+  <aside id="sidebar">
+    <h2>Redes Sociales</h2>
+    <a href="#">🌐 Sitio Web</a>
+    <a href="#">💬 Discord</a>
+    <a href="#">🐦 Twitter</a>
+    <a href="#">📸 Instagram</a>
+    <a href="#">🎬 YouTube</a>
+  </aside>
+
+  <main>
+    <section class="card">
+      <h2>Configura tu App</h2>
+      <label>Nombre de la App:</label>
+      <input type="text" id="appName" placeholder="Ej: NeoBrowser">
+      <label>URL del sitio web:</label>
+      <input type="url" id="appURL" placeholder="https://...">
+      <label>Descripción:</label>
+      <textarea id="appDesc" placeholder="Descripción de tu aplicación..."></textarea>
+      <label>Ícono de la app:</label>
+      <input type="file" id="appIcon" accept="image/*">
+      <button class="btn" id="generateBtn">Generar APK</button>
+
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar">0%</div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 NeoTech Labs - Proyecto Futurista</p>
+  </footer>
+
+  <script>
+    // Sidebar toggle
+    const sidebar = document.getElementById("sidebar");
+    const toggleSidebar = document.getElementById("toggleSidebar");
+    toggleSidebar.onclick = () => {
+      sidebar.classList.toggle("active");
+    };
+
+    // Simulación de generación APK
+    const progressBar = document.getElementById("progressBar");
+    const generateBtn = document.getElementById("generateBtn");
+
+    generateBtn.addEventListener("click", () => {
+      let width = 0;
+      generateBtn.disabled = true;
+      const interval = setInterval(() => {
+        if (width >= 100) {
+          clearInterval(interval);
+          generateBtn.textContent = "✅ APK Generado (Simulado)";
+          const blob = new Blob(["Simulación de APK"], { type: "application/vnd.android.package-archive" });
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.download = "AppGenerada.apk";
+          link.click();
+        } else {
+          width += 2;
+          progressBar.style.width = width + "%";
+          progressBar.textContent = width + "%";
+        }
+      }, 100);
+    });
+  </script>
+</body>
+</html>
